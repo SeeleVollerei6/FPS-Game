@@ -9,9 +9,9 @@ public class SmokeDamage : MonoBehaviour
 
     private Dictionary<GameObject, float> nextDamageTime = new Dictionary<GameObject, float>();
 
-    private void OnTriggerEnter(Collider other)
+    private void OnCollisionEnter(Collision collision)
     {
-        Enemy zombie = other.GetComponentInParent<Enemy>();
+        Enemy zombie = collision.gameObject.GetComponentInParent<Enemy>();
 
         if (zombie != null && !zombie.isDead)
         {
@@ -19,9 +19,9 @@ public class SmokeDamage : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other)
+    private void OnCollisionStay(Collision collision)
     {
-        Enemy zombie = other.GetComponentInParent<Enemy>();
+        Enemy zombie = collision.gameObject.GetComponentInParent<Enemy>();
 
         if (zombie != null && !zombie.isDead)
         {
@@ -43,9 +43,9 @@ public class SmokeDamage : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void OnCollisionExit(Collision collision)
     {
-        Enemy zombie = other.GetComponentInParent<Enemy>();
+        Enemy zombie = collision.gameObject.GetComponentInParent<Enemy>();
 
         if (zombie != null)
         {
