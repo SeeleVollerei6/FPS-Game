@@ -35,6 +35,13 @@ public class WeaponManager : MonoBehaviour
     public int tacticalCount = 0;
     public Throwable.ThrowableType equippedTacticalType;
 
+    private enum CurrentThrowType { 
+        None, 
+        Lethal, 
+        Tactical 
+    }
+    private CurrentThrowType currentThrowState = CurrentThrowType.None;
+
     private void Start()
     {
         activeWeaponSlot = weaponSlots[0];
@@ -65,9 +72,22 @@ public class WeaponManager : MonoBehaviour
                 SwitchActiveSlot(1);
             }
         }
-
-        HandleThrowInput(KeyCode.G, ref lethalCount, () => ThrowLethal());
-        HandleThrowInput(KeyCode.T, ref tacticalCount, () => ThrowTactical());
+        
+        if (!isChargingThrow)
+        {
+            if (Input.GetKeyDown(KeyCode.G) && lethalCount > 0)
+            {
+                StartCharging(CurrentThrowType.Lethal);
+            }
+            if (Input.GetKeyDown(KeyCode.T) && tacticalCount > 0)
+            {
+                StartCharging(CurrentThrowType.Tactical);
+            }
+        }
+        else
+        {
+            HandleCharging();
+        }
     }
 
     public void Awake()
@@ -344,31 +364,40 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
-    private void HandleThrowInput(KeyCode key, ref int count, Action throwAction)
+    private void StartCharging(CurrentThrowType type)
     {
-        if (count <= 0) return;
+        isChargingThrow = true;
+        currentThrowState = type;
+        forceMultiplier = 0.2f;
+        throwableLine.enabled = true;
+    }
 
-        if (Input.GetKeyDown(key))
-        {
-            isChargingThrow = true;
-            forceMultiplier = 0.2f;
-            throwableLine.enabled = true;
-        }
+    private void HandleCharging()
+    {
+        KeyCode keyToCheck = (currentThrowState == CurrentThrowType.Lethal) ? KeyCode.G : KeyCode.T;
 
-        if (Input.GetKey(key) && isChargingThrow)
+        if (Input.GetKey(keyToCheck))
         {
-            forceMultiplier += Time.deltaTime * 1.5f; 
+            forceMultiplier += Time.deltaTime * 1.5f;
             forceMultiplier = Mathf.Clamp01(forceMultiplier);
-
             DrawCurve();
         }
 
-        if (Input.GetKeyUp(key) && isChargingThrow)
+        if (Input.GetKeyUp(keyToCheck))
         {
-            throwAction.Invoke();
+            if (currentThrowState == CurrentThrowType.Lethal)
+            {
+                ThrowLethal();
+            }
+            if (currentThrowState == CurrentThrowType.Tactical)
+            {
+                ThrowTactical();
+            }
+
             isChargingThrow = false;
+            currentThrowState = CurrentThrowType.None;
             forceMultiplier = 0f;
-            throwableLine.enabled = false;
+            if (throwableLine != null) throwableLine.enabled = false;
         }
     }
 

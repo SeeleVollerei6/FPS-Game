@@ -28,6 +28,9 @@ public class Enemy : MonoBehaviour
     public Transform hipsBone;
     public float maxRootSeparation = 10f;
 
+    private float lastHurtSoundTime;
+    private float hurtSoundCooldown = 0.3f;
+
     public bool canSeePlayer { get; private set; }
 
     public enum LootType
@@ -100,7 +103,11 @@ public class Enemy : MonoBehaviour
         else
         {
             animator.SetTrigger("DAMAGE");
+            if (Time.time > lastHurtSoundTime + hurtSoundCooldown)
+        {
             SoundManager.Instance.zombieChannel2.PlayOneShot(SoundManager.Instance.zombieHurt);
+            lastHurtSoundTime = Time.time;
+        }
         }
     }
 
